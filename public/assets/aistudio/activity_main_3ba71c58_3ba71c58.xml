@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#F0F4F8">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🏠 Property Broker"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="#1A237E"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Welcome"
+        android:textSize="16sp"
+        android:textColor="#616161"
+        android:layout_marginBottom="40dp" />
+
+    <Button
+        android:id="@+id/btnSale"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="1. SALE"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#1565C0"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnBuy"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="2. BUY"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#2E7D32"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnRent"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="3. RENT"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="#C62828"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>

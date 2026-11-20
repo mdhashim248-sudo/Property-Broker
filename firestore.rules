@@ -1,0 +1,382 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Hardened Security Primitives ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+             'email_verified' in request.auth.token &&
+             request.auth.token.email_verified == true &&
+             'email' in request.auth.token &&
+             request.auth.token.email == 'md.hashim248@gmail.com';
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidTimestamp(ts) {
+      return ts is timestamp && ts <= request.time;
+    }
+
+    // --- Entity Validation Blueprints ---
+    function isValidUserProfile(data, targetUserId) {
+      return data.userId is string && data.userId == targetUserId &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+             data.role in ['BUYER', 'OWNER', 'RENTER', 'BOTH'] &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 160)) &&
+             (!('photoUrl' in data) || data.photoUrl == null || (data.photoUrl is string && data.photoUrl.size() <= 600));
+    }
+
+    function isValidProperty(data) {
+      return data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+             data.ownerName is string && data.ownerName.size() >= 1 && data.ownerName.size() <= 80 &&
+             data.title is string && data.title.size() >= 3 && data.title.size() <= 100 &&
+             data.description is string && data.description.size() <= 1200 &&
+             data.price is int && data.price >= 1 && data.price <= 10000000000 &&
+             data.location is string && data.location.size() >= 2 && data.location.size() <= 120 &&
+             data.listingType in ['SALE', 'RENT', 'HEAVY_DEPOSIT'] &&
+             data.propertyCategory in ['APARTMENT', 'VILLA', 'SHOP', 'GALA', 'HOUSE', 'OFFICE', 'STUDIO', 'COMMERCIAL', 'PLOT'] &&
+             data.bedrooms is int && data.bedrooms >= 0 && data.bedrooms <= 20 &&
+             data.areaSqFt is int && data.areaSqFt >= 0 && data.areaSqFt <= 1000000 &&
+             (!('latitude' in data) || (data.latitude is number && data.latitude >= -90 && data.latitude <= 90)) &&
+             (!('longitude' in data) || (data.longitude is number && data.longitude >= -180 && data.longitude <= 180)) &&
+             (!('floor' in data) || (data.floor is string && data.floor.size() <= 40)) &&
+             (!('depositAmount' in data) || (data.depositAmount is int && data.depositAmount >= 0 && data.depositAmount <= 10000000000)) &&
+             (!('monthlyRent' in data) || (data.monthlyRent is int && data.monthlyRent >= 0 && data.monthlyRent <= 10000000000)) &&
+             (!('buildingAge' in data) || (data.buildingAge is string && data.buildingAge.size() <= 40)) &&
+             (!('hasLift' in data) || data.hasLift is bool) &&
+             data.photoKeys is list && data.photoKeys.size() >= 1 && data.photoKeys.size() <= 10 &&
+             data.photoKeys[0] is string && data.photoKeys[0].size() >= 1 && data.photoKeys[0].size() <= 500 &&
+             data.hasVideo is bool &&
+             data.videoLabel is string && data.videoLabel.size() <= 300 &&
+             data.totalMediaBytes is int && data.totalMediaBytes >= 0 && data.totalMediaBytes <= 8388608 &&
+             data.verifiedListing is bool &&
+             data.status in ['ACTIVE', 'CLOSED'];
+    }
+
+    function isValidPropertyContact(data) {
+      return data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+             data.contactPhone is string && data.contactPhone.size() >= 7 && data.contactPhone.size() <= 20 &&
+             data.contactEmail is string && data.contactEmail.size() <= 160 &&
+             data.whatsappEnabled is bool;
+    }
+
+    function isValidUnlock(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.propertyId is string && isValidId(data.propertyId) &&
+             data.amountPaid is int && data.amountPaid >= 999 && data.amountPaid <= 10000 &&
+             data.paymentMethod in ['UPI_VERIFIED', 'CARD_TOKEN', 'DEMO_PASS'] &&
+             data.referenceCode is string && data.referenceCode.size() >= 4 && data.referenceCode.size() <= 64;
+    }
+
+    function isValidMembership(data, targetUserId) {
+      return data.userId is string && data.userId == targetUserId &&
+             data.planName is string && data.planName.size() >= 3 && data.planName.size() <= 80 &&
+             data.amountPaid is int && data.amountPaid >= 0 && data.amountPaid <= 10000 &&
+             data.premiumActive is bool &&
+             data.referenceCode is string && data.referenceCode.size() >= 4 && data.referenceCode.size() <= 64 &&
+             data.expiresAtMillis is int && data.expiresAtMillis >= 0;
+    }
+
+    function isValidChat(data) {
+      return data.propertyId is string && isValidId(data.propertyId) &&
+             data.propertyTitle is string && data.propertyTitle.size() >= 1 && data.propertyTitle.size() <= 120 &&
+             data.buyerId is string && data.buyerId.size() >= 1 && data.buyerId.size() <= 128 &&
+             data.buyerName is string && data.buyerName.size() >= 1 && data.buyerName.size() <= 80 &&
+             data.ownerId is string && data.ownerId.size() >= 1 && data.ownerId.size() <= 128 &&
+             data.ownerName is string && data.ownerName.size() >= 1 && data.ownerName.size() <= 80 &&
+             data.participantUids is list && data.participantUids.size() == 2 &&
+             data.buyerId in data.participantUids &&
+             data.ownerId in data.participantUids &&
+             data.lastMessage is string && data.lastMessage.size() <= 500;
+    }
+
+    function isValidChatMessage(data) {
+      return data.chatId is string && isValidId(data.chatId) &&
+             data.senderId is string && data.senderId.size() >= 1 && data.senderId.size() <= 128 &&
+             data.senderName is string && data.senderName.size() >= 1 && data.senderName.size() <= 80 &&
+             data.participantUids is list && data.participantUids.size() == 2 &&
+             data.text is string && data.text.size() >= 1 && data.text.size() <= 1000;
+    }
+
+    function hasActivePremium(uid) {
+      return exists(/databases/$(database)/documents/users/$(uid)/private/membership) &&
+             get(/databases/$(database)/documents/users/$(uid)/private/membership).data.premiumActive == true;
+    }
+
+    function isValidAuditLog(data) {
+      return data.action in [
+               'PROPERTY_CREATE', 'PROPERTY_EDIT', 'PROPERTY_STATUS', 'PROPERTY_VERIFY', 'PROPERTY_DELETE',
+               'USER_ROLE', 'USER_DELETE', 'PASS_GRANT', 'PASS_REVOKE', 'CHAT_DELETE', 'SETTINGS_UPDATE'
+             ] &&
+             data.entityType in ['PROPERTY', 'USER', 'MEMBERSHIP', 'CHAT', 'SETTINGS'] &&
+             data.entityId is string && data.entityId.size() >= 1 && data.entityId.size() <= 128 &&
+             data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 240 &&
+             (!('details' in data) || (data.details is string && data.details.size() <= 500)) &&
+             data.adminEmail is string && data.adminEmail.size() >= 3 && data.adminEmail.size() <= 160;
+    }
+
+    // --- 0. App Management Config (Admin-managed settings & notices) ---
+    match /app_config/{docId} {
+      allow get: if isSignedIn() && isValidId(docId);
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin() && isValidId(docId);
+    }
+
+    // --- 0b. Admin Audit Logs (Append-only verified Admin activity trail) ---
+    match /admin_audit_logs/{logId} {
+      allow get, list: if isAdmin();
+      allow create: if isAdmin() &&
+                       isValidId(logId) &&
+                       incoming().keys().hasAll(['action', 'entityType', 'entityId', 'summary', 'adminEmail', 'createdAt']) &&
+                       incoming().keys().hasOnly(['action', 'entityType', 'entityId', 'summary', 'details', 'adminEmail', 'createdAt']) &&
+                       isValidAuditLog(incoming()) &&
+                       isValidTimestamp(incoming().createdAt);
+      allow update: if false;
+      allow delete: if isAdmin() && isValidId(logId);
+    }
+
+    // --- 1. User Profiles (PII-isolated to owner + verified Admin) ---
+    match /users/{userId} {
+      allow get: if (isOwner(userId) || isAdmin()) && isValidId(userId);
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'displayName', 'role', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'displayName', 'email', 'photoUrl', 'role', 'createdAt', 'updatedAt']) &&
+                       isValidTimestamp(incoming().createdAt) &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       isValidUserProfile(incoming(), userId);
+      allow update: if (isOwner(userId) || isAdmin()) &&
+                       isValidId(userId) &&
+                       isValidUserProfile(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'email', 'photoUrl', 'role', 'updatedAt']);
+      allow delete: if (isOwner(userId) || isAdmin()) && isValidId(userId);
+
+      // Saved Favorites
+      match /favorites/{propertyId} {
+        allow list: if isOwner(userId) || isAdmin();
+        allow get: if (isOwner(userId) || isAdmin()) && isValidId(propertyId);
+        allow create: if isOwner(userId) &&
+                         isValidId(propertyId) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().propertyId == propertyId &&
+                         incoming().keys().hasAll(['userId', 'propertyId', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'propertyId', 'createdAt']) &&
+                         isValidTimestamp(incoming().createdAt) &&
+                         exists(/databases/$(database)/documents/properties/$(propertyId));
+        allow update: if false;
+        allow delete: if (isOwner(userId) || isAdmin()) && isValidId(propertyId);
+      }
+
+      // Single-property contact unlock receipts (immutable)
+      match /unlocks/{propertyId} {
+        allow list: if isOwner(userId) || isAdmin();
+        allow get: if (isOwner(userId) || isAdmin()) && isValidId(propertyId);
+        allow create: if isOwner(userId) &&
+                         isValidId(propertyId) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().propertyId == propertyId &&
+                         incoming().keys().hasAll(['userId', 'propertyId', 'amountPaid', 'paymentMethod', 'referenceCode', 'unlockedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'propertyId', 'amountPaid', 'paymentMethod', 'referenceCode', 'unlockedAt']) &&
+                         isValidTimestamp(incoming().unlockedAt) &&
+                         isValidUnlock(incoming()) &&
+                         exists(/databases/$(database)/documents/properties/$(propertyId));
+        allow update, delete: if false;
+      }
+
+      // 7-Day Premium Pass state (owner + Admin grant/revoke)
+      match /private/{docId} {
+        allow get: if (isOwner(userId) || isAdmin()) && docId == 'membership';
+        allow list: if isAdmin();
+        allow create: if (isOwner(userId) || isAdmin()) &&
+                         docId == 'membership' &&
+                         incoming().userId == userId &&
+                         incoming().keys().hasAll(['userId', 'planName', 'amountPaid', 'premiumActive', 'referenceCode', 'expiresAtMillis', 'activatedAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'planName', 'amountPaid', 'premiumActive', 'referenceCode', 'expiresAtMillis', 'activatedAt', 'updatedAt']) &&
+                         isValidTimestamp(incoming().activatedAt) &&
+                         isValidTimestamp(incoming().updatedAt) &&
+                         isValidMembership(incoming(), userId);
+        allow update: if (isOwner(userId) || isAdmin()) &&
+                         docId == 'membership' &&
+                         isValidMembership(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().activatedAt == existing().activatedAt &&
+                         isValidTimestamp(incoming().updatedAt) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['planName', 'amountPaid', 'premiumActive', 'referenceCode', 'expiresAtMillis', 'updatedAt']);
+        allow delete: if isAdmin() && docId == 'membership';
+      }
+    }
+
+    // --- 2. Property Marketplace Listings (Public fields only, NO PII) ---
+    match /properties/{propertyId} {
+      allow get: if isSignedIn() &&
+                    isValidId(propertyId) &&
+                    (isAdmin() || existing().status == 'ACTIVE' || existing().ownerId == request.auth.uid);
+      allow list: if isSignedIn() &&
+                     (isAdmin() || existing().status == 'ACTIVE' || existing().ownerId == request.auth.uid);
+      allow create: if isSignedIn() &&
+                       isValidId(propertyId) &&
+                       (incoming().ownerId == request.auth.uid || isAdmin()) &&
+                       incoming().keys().hasAll([
+                         'ownerId', 'ownerName', 'title', 'description', 'price', 'location',
+                         'listingType', 'propertyCategory', 'bedrooms', 'areaSqFt', 'photoKeys',
+                         'hasVideo', 'videoLabel', 'totalMediaBytes', 'verifiedListing', 'status', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'ownerId', 'ownerName', 'title', 'description', 'price', 'location',
+                         'listingType', 'propertyCategory', 'bedrooms', 'areaSqFt', 'latitude', 'longitude',
+                         'floor', 'depositAmount', 'monthlyRent', 'buildingAge', 'hasLift',
+                         'photoKeys', 'hasVideo', 'videoLabel', 'totalMediaBytes', 'verifiedListing',
+                         'status', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidTimestamp(incoming().createdAt) &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       isValidProperty(incoming()) &&
+                       (isAdmin() || request.time < timestamp.date(2027, 1, 1) || hasActivePremium(request.auth.uid));
+      allow update: if isSignedIn() &&
+                       isValidId(propertyId) &&
+                       isValidProperty(incoming()) &&
+                       (existing().ownerId == request.auth.uid || isAdmin()) &&
+                       incoming().ownerId == existing().ownerId &&
+                       (isAdmin() || incoming().verifiedListing == existing().verifiedListing) &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'ownerName', 'title', 'description', 'price', 'location', 'listingType',
+                         'propertyCategory', 'bedrooms', 'areaSqFt', 'latitude', 'longitude',
+                         'floor', 'depositAmount', 'monthlyRent', 'buildingAge', 'hasLift',
+                         'photoKeys', 'hasVideo', 'videoLabel', 'totalMediaBytes', 'verifiedListing', 'status', 'updatedAt'
+                       ]);
+      allow delete: if isSignedIn() &&
+                       isValidId(propertyId) &&
+                       (existing().ownerId == request.auth.uid || isAdmin());
+
+      // PII-Isolated Private Contact Vault (Owner, Admin, receipt holder, active Premium Pass, or pre-2027 free window)
+      match /private/{docId} {
+        allow get: if isSignedIn() &&
+                      isValidId(propertyId) &&
+                      docId == 'contact' &&
+                      (
+                        isAdmin() ||
+                        request.time < timestamp.date(2027, 1, 1) ||
+                        existing().ownerId == request.auth.uid ||
+                        exists(/databases/$(database)/documents/users/$(request.auth.uid)/unlocks/$(propertyId)) ||
+                        hasActivePremium(request.auth.uid)
+                      );
+        allow list: if isAdmin();
+        allow create: if isSignedIn() &&
+                         isValidId(propertyId) &&
+                         docId == 'contact' &&
+                         (incoming().ownerId == request.auth.uid || isAdmin()) &&
+                         incoming().keys().hasAll(['ownerId', 'contactPhone', 'contactEmail', 'whatsappEnabled', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['ownerId', 'contactPhone', 'contactEmail', 'whatsappEnabled', 'createdAt', 'updatedAt']) &&
+                         isValidTimestamp(incoming().createdAt) &&
+                         isValidTimestamp(incoming().updatedAt) &&
+                         isValidPropertyContact(incoming()) &&
+                         (isAdmin() || get(/databases/$(database)/documents/properties/$(propertyId)).data.ownerId == request.auth.uid);
+        allow update: if isSignedIn() &&
+                         isValidId(propertyId) &&
+                         docId == 'contact' &&
+                         isValidPropertyContact(incoming()) &&
+                         (existing().ownerId == request.auth.uid || isAdmin()) &&
+                         incoming().ownerId == existing().ownerId &&
+                         incoming().createdAt == existing().createdAt &&
+                         isValidTimestamp(incoming().updatedAt) &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['contactPhone', 'contactEmail', 'whatsappEnabled', 'updatedAt']);
+        allow delete: if isSignedIn() &&
+                         isValidId(propertyId) &&
+                         docId == 'contact' &&
+                         (existing().ownerId == request.auth.uid || isAdmin());
+      }
+    }
+
+    // --- 3. Real-Time Buyer-Owner Negotiation Chats ---
+    match /chats/{chatId} {
+      allow get: if isSignedIn() &&
+                    isValidId(chatId) &&
+                    (isAdmin() || request.auth.uid in existing().participantUids);
+      allow list: if isSignedIn() &&
+                     (isAdmin() || request.auth.uid in existing().participantUids);
+      allow create: if isSignedIn() &&
+                       isValidId(chatId) &&
+                       incoming().buyerId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'propertyId', 'propertyTitle', 'buyerId', 'buyerName',
+                         'ownerId', 'ownerName', 'participantUids', 'lastMessage',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'propertyId', 'propertyTitle', 'buyerId', 'buyerName',
+                         'ownerId', 'ownerName', 'participantUids', 'lastMessage',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidTimestamp(incoming().createdAt) &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       isValidChat(incoming()) &&
+                       exists(/databases/$(database)/documents/properties/$(incoming().propertyId));
+      allow update: if isSignedIn() &&
+                       isValidId(chatId) &&
+                       isValidChat(incoming()) &&
+                       request.auth.uid in existing().participantUids &&
+                       incoming().propertyId == existing().propertyId &&
+                       incoming().buyerId == existing().buyerId &&
+                       incoming().ownerId == existing().ownerId &&
+                       incoming().participantUids == existing().participantUids &&
+                       incoming().createdAt == existing().createdAt &&
+                       isValidTimestamp(incoming().updatedAt) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['lastMessage', 'updatedAt']);
+      allow delete: if isAdmin() && isValidId(chatId);
+
+      match /messages/{messageId} {
+        allow get: if isSignedIn() &&
+                      isValidId(chatId) &&
+                      isValidId(messageId) &&
+                      (isAdmin() || request.auth.uid in existing().participantUids);
+        allow list: if isSignedIn() &&
+                       isValidId(chatId) &&
+                       (isAdmin() || request.auth.uid in existing().participantUids);
+        allow create: if isSignedIn() &&
+                         isValidId(chatId) &&
+                         isValidId(messageId) &&
+                         incoming().senderId == request.auth.uid &&
+                         request.auth.uid in incoming().participantUids &&
+                         incoming().chatId == chatId &&
+                         incoming().keys().hasAll(['chatId', 'senderId', 'senderName', 'participantUids', 'text', 'createdAt']) &&
+                         incoming().keys().hasOnly(['chatId', 'senderId', 'senderName', 'participantUids', 'text', 'createdAt']) &&
+                         isValidTimestamp(incoming().createdAt) &&
+                         isValidChatMessage(incoming()) &&
+                         exists(/databases/$(database)/documents/chats/$(chatId)) &&
+                         incoming().participantUids == get(/databases/$(database)/documents/chats/$(chatId)).data.participantUids;
+        allow update: if false;
+        allow delete: if isAdmin() && isValidId(chatId) && isValidId(messageId);
+      }
+    }
+  }
+}

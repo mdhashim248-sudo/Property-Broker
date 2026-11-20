@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F0F4F8">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add New Property"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1A237E"
+            android:layout_marginBottom="20dp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Title *" android:textStyle="bold" android:layout_marginBottom="4dp" />
+        <EditText android:id="@+id/etTitle" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="e.g. 2BHK Flat in Andheri"
+            android:inputType="text" android:padding="12dp" android:layout_marginBottom="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Description" android:textStyle="bold" android:layout_marginBottom="4dp" />
+        <EditText android:id="@+id/etDescription" android:layout_width="match_parent"
+            android:layout_height="90dp" android:hint="Property details..." android:inputType="textMultiLine"
+            android:gravity="top" android:padding="12dp" android:layout_marginBottom="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Price (₹) *" android:textStyle="bold" android:layout_marginBottom="4dp" />
+        <EditText android:id="@+id/etPrice" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="e.g. 8500000" android:inputType="numberDecimal"
+            android:padding="12dp" android:layout_marginBottom="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Location *" android:textStyle="bold" android:layout_marginBottom="4dp" />
+        <EditText android:id="@+id/etLocation" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="e.g. Andheri West, Mumbai"
+            android:inputType="text" android:padding="12dp" android:layout_marginBottom="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Owner Name *" android:textStyle="bold" android:layout_marginBottom="4dp" />
+        <EditText android:id="@+id/etOwnerName" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="Your full name"
+            android:inputType="textPersonName" android:padding="12dp" android:layout_marginBottom="12dp"
+            android:background="@android:drawable/edit_text" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Contact Number *" android:textStyle="bold" android:layout_marginBottom="4dp" />
+        <EditText android:id="@+id/etContact" android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:hint="9876543210" android:inputType="phone"
+            android:padding="12dp" android:layout_marginBottom="20dp"
+            android:background="@android:drawable/edit_text" />
+
+        <!-- Photos -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Photos (Max 10)" android:textStyle="bold" android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+        <Button android:id="@+id/btnSelectPhotos" android:layout_width="match_parent"
+            android:layout_height="48dp" android:text="Select Photos from Gallery"
+            android:backgroundTint="#5E35B1" android:textColor="#FFFFFF"
+            android:layout_marginBottom="6dp" />
+        <TextView android:id="@+id/tvPhotoCount" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="Photos selected: 0/10"
+            android:textColor="#616161" android:layout_marginBottom="16dp" />
+
+        <!-- Video -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="Video (Max 1)" android:textStyle="bold" android:textSize="16sp"
+            android:layout_marginBottom="8dp" />
+        <Button android:id="@+id/btnSelectVideo" android:layout_width="match_parent"
+            android:layout_height="48dp" android:text="Select Video from Gallery"
+            android:backgroundTint="#00838F" android:textColor="#FFFFFF"
+            android:layout_marginBottom="6dp" />
+        <TextView android:id="@+id/tvVideoStatus" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:text="No video selected"
+            android:textColor="#616161" android:layout_marginBottom="24dp" />
+
+        <Button android:id="@+id/btnSave" android:layout_width="match_parent"
+            android:layout_height="56dp" android:text="Save Property"
+            android:textSize="18sp" android:textStyle="bold"
+            android:backgroundTint="#1565C0" android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</ScrollView>

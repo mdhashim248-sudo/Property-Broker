@@ -1,0 +1,225 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user account and preferred marketplace role",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID" },
+        "displayName": { "type": "string", "description": "User display name" },
+        "email": { "type": "string", "description": "Verified Google account email (owner-only PII)" },
+        "photoUrl": { "type": "string", "description": "Optional profile avatar URL" },
+        "role": { "type": "string", "enum": ["BUYER", "OWNER", "RENTER", "BOTH"] },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update" }
+      },
+      "required": ["userId", "displayName", "role", "createdAt", "updatedAt"]
+    },
+    "PropertyListing": {
+      "title": "PropertyListing",
+      "description": "Public marketplace property listing without raw PII contact details",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string", "description": "Creator Firebase Auth UID" },
+        "ownerName": { "type": "string", "description": "Public owner display name" },
+        "title": { "type": "string", "description": "Listing headline" },
+        "description": { "type": "string", "description": "Property details" },
+        "price": { "type": "integer", "description": "Price or monthly rent in INR" },
+        "location": { "type": "string", "description": "City or neighborhood" },
+        "listingType": { "type": "string", "enum": ["SALE", "RENT", "HEAVY_DEPOSIT"] },
+        "propertyCategory": { "type": "string", "enum": ["APARTMENT", "VILLA", "SHOP", "GALA", "HOUSE", "OFFICE", "STUDIO", "COMMERCIAL", "PLOT"] },
+        "bedrooms": { "type": "integer", "description": "Bedroom count" },
+        "areaSqFt": { "type": "integer", "description": "Area in square feet" },
+        "latitude": { "type": "number", "description": "Optional geographic latitude (-90 to 90)" },
+        "longitude": { "type": "number", "description": "Optional geographic longitude (-180 to 180)" },
+        "floor": { "type": "string", "description": "Optional floor number or level (e.g., Ground, 3rd Floor) for Rent and Heavy Deposit listings" },
+        "depositAmount": { "type": "integer", "description": "Optional security deposit in INR for Rental listings" },
+        "monthlyRent": { "type": "integer", "description": "Optional monthly rent in INR for Heavy Deposit listings" },
+        "buildingAge": { "type": "string", "description": "Optional building age (e.g., New, 1-5 Years, 10+ Years)" },
+        "hasLift": { "type": "boolean", "description": "Optional lift / elevator availability (Yes or No)" },
+        "photoKeys": { "type": "array", "description": "1 to 10 photo references" },
+        "hasVideo": { "type": "boolean", "description": "Whether a property walkthrough video is attached" },
+        "videoLabel": { "type": "string", "description": "Video URI or label" },
+        "totalMediaBytes": { "type": "integer", "description": "Combined photo and video size in bytes (max 8 MB / 8388608 bytes)" },
+        "verifiedListing": { "type": "boolean", "description": "Google-verified owner badge" },
+        "status": { "type": "string", "enum": ["ACTIVE", "CLOSED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "ownerId", "ownerName", "title", "description", "price", "location",
+        "listingType", "propertyCategory", "bedrooms", "areaSqFt", "photoKeys",
+        "hasVideo", "videoLabel", "totalMediaBytes", "verifiedListing", "status", "createdAt", "updatedAt"
+      ]
+    },
+    "PropertyContact": {
+      "title": "PropertyContact",
+      "description": "PII-isolated owner phone, email, and WhatsApp availability unlocked by pass or receipt",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "contactPhone": { "type": "string" },
+        "contactEmail": { "type": "string" },
+        "whatsappEnabled": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "contactPhone", "contactEmail", "whatsappEnabled", "createdAt", "updatedAt"]
+    },
+    "FavoriteRef": {
+      "title": "FavoriteRef",
+      "description": "Saved property bookmark scoped to user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "propertyId", "createdAt"]
+    },
+    "ContactUnlock": {
+      "title": "ContactUnlock",
+      "description": "Immutable receipt unlocking private contact for a property",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "propertyId": { "type": "string" },
+        "amountPaid": { "type": "integer" },
+        "paymentMethod": { "type": "string", "enum": ["UPI_VERIFIED", "CARD_TOKEN", "DEMO_PASS"] },
+        "referenceCode": { "type": "string" },
+        "unlockedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "propertyId", "amountPaid", "paymentMethod", "referenceCode", "unlockedAt"]
+    },
+    "PremiumMembership": {
+      "title": "PremiumMembership",
+      "description": "7-Day Premium Pass unlocking verified owner contacts and listing creation from 1 Jan 2027",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "planName": { "type": "string" },
+        "amountPaid": { "type": "integer" },
+        "premiumActive": { "type": "boolean" },
+        "referenceCode": { "type": "string" },
+        "expiresAtMillis": { "type": "integer" },
+        "activatedAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "planName", "amountPaid", "premiumActive", "referenceCode", "expiresAtMillis", "activatedAt", "updatedAt"]
+    },
+    "AppConfig": {
+      "title": "AppConfig",
+      "description": "Admin-managed live application configuration, pricing, announcement banner, and Play Store metadata",
+      "type": "object",
+      "properties": {
+        "latestVersion": { "type": "string" },
+        "minSupportedVersion": { "type": "string" },
+        "playStoreUrl": { "type": "string" },
+        "supportEmail": { "type": "string" },
+        "supportWhatsApp": { "type": "string" },
+        "premiumLaunchDate": { "type": "string" },
+        "premiumPassPriceInr": { "type": "integer" },
+        "premiumDurationDays": { "type": "integer" },
+        "singleUnlockPriceInr": { "type": "integer" },
+        "announcementBanner": { "type": "string" },
+        "maintenanceMode": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "AdminAuditLog": {
+      "title": "AdminAuditLog",
+      "description": "Immutable admin action audit entry tracking property edits, status changes, role updates, pass grants, and settings updates",
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "PROPERTY_CREATE", "PROPERTY_EDIT", "PROPERTY_STATUS", "PROPERTY_VERIFY", "PROPERTY_DELETE",
+            "USER_ROLE", "USER_DELETE", "PASS_GRANT", "PASS_REVOKE", "CHAT_DELETE", "SETTINGS_UPDATE"
+          ]
+        },
+        "entityType": { "type": "string", "enum": ["PROPERTY", "USER", "MEMBERSHIP", "CHAT", "SETTINGS"] },
+        "entityId": { "type": "string" },
+        "summary": { "type": "string" },
+        "details": { "type": "string" },
+        "adminEmail": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "entityType", "entityId", "summary", "adminEmail", "createdAt"]
+    },
+    "PropertyChat": {
+      "title": "PropertyChat",
+      "description": "Private 1:1 negotiation thread between buyer/renter and property owner",
+      "type": "object",
+      "properties": {
+        "propertyId": { "type": "string" },
+        "propertyTitle": { "type": "string" },
+        "buyerId": { "type": "string" },
+        "buyerName": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "ownerName": { "type": "string" },
+        "participantUids": { "type": "array" },
+        "lastMessage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["propertyId", "propertyTitle", "buyerId", "buyerName", "ownerId", "ownerName", "participantUids", "lastMessage", "createdAt", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Message inside a property negotiation chat",
+      "type": "object",
+      "properties": {
+        "chatId": { "type": "string" },
+        "senderId": { "type": "string" },
+        "senderName": { "type": "string" },
+        "participantUids": { "type": "array" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["chatId", "senderId", "senderName", "participantUids", "text", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/app_config/{docId}": {
+      "schema": { "$ref": "#/entities/AppConfig" },
+      "description": "Admin-managed app configuration and settings"
+    },
+    "/admin_audit_logs/{logId}": {
+      "schema": { "$ref": "#/entities/AdminAuditLog" },
+      "description": "Append-only admin activity audit trail"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Owner-only + verified Admin user profile"
+    },
+    "/users/{userId}/favorites/{propertyId}": {
+      "schema": { "$ref": "#/entities/FavoriteRef" },
+      "description": "User saved property bookmarks"
+    },
+    "/users/{userId}/unlocks/{propertyId}": {
+      "schema": { "$ref": "#/entities/ContactUnlock" },
+      "description": "User single-property contact unlock receipts"
+    },
+    "/users/{userId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/PremiumMembership" },
+      "description": "User 7-Day Premium Pass state"
+    },
+    "/properties/{propertyId}": {
+      "schema": { "$ref": "#/entities/PropertyListing" },
+      "description": "Public marketplace property listings"
+    },
+    "/properties/{propertyId}/private/{docId}": {
+      "schema": { "$ref": "#/entities/PropertyContact" },
+      "description": "PII-isolated owner contact vault"
+    },
+    "/chats/{chatId}": {
+      "schema": { "$ref": "#/entities/PropertyChat" },
+      "description": "Buyer-owner negotiation threads"
+    },
+    "/chats/{chatId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Messages within a property negotiation chat"
+    }
+  }
+}

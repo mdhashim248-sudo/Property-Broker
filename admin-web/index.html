@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Property Broker — Free Admin Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <!-- ==================== ADMIN LOGIN GATE ==================== -->
+  <section id="login-gate" class="login-gate">
+    <div class="login-card">
+      <div class="login-brand">PB</div>
+      <h1>Property Broker Admin</h1>
+      <p>Live management console for your Android app — Properties, Contact Vaults, Users, 7-Day Premium Passes, Chats &amp; App Settings.</p>
+      <div class="login-meta">
+        <div><strong>Project:</strong> gen-lang-client-0124044841</div>
+        <div><strong>Authorized Admin:</strong> md.hashim248@gmail.com</div>
+        <div><strong>Hosting Cost:</strong> ₹0 / month (100% Free Static Hosting)</div>
+      </div>
+      <button id="btn-google-signin" class="btn-google" type="button">
+        <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+          <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+          <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+          <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+          <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        </svg>
+        <span>Sign in with Admin Google Account</span>
+      </button>
+      <div id="login-error" class="login-error hidden"></div>
+      <div class="rera-disclaimer-login">
+        <strong>RERA &amp; Platform Disclaimer:</strong> Property Broker operates solely as an online intermediary and technology listing platform connecting property owners, real estate agents, and prospective buyers/tenants. We do not act as a real estate broker, developer, or agent, nor do we verify, endorse, or guarantee the accuracy, legality, or RERA registration status of any property listed on this platform. Prospective buyers and tenants are strongly advised to independently verify all property titles, approvals, and RERA registration details directly on the official state RERA portal (such as <a href="https://maharera.maharashtra.gov.in" target="_blank" rel="noopener">maharera.maharashtra.gov.in</a>) before making any financial commitment or transaction.
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ADMIN APP SHELL ==================== -->
+  <div id="app-shell" class="app-shell hidden">
+    <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
+    <aside id="sidebar" class="sidebar" aria-label="Admin Navigation">
+      <div class="sidebar-header">
+        <div class="brand-badge">PB</div>
+        <div class="brand-text">
+          <strong>Property Broker</strong>
+          <span>Admin Console • v4.0</span>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item active" data-view="overview" type="button">
+          <span class="nav-item-left">📊 Overview</span>
+        </button>
+        <button class="nav-item" data-view="analytics" type="button">
+          <span class="nav-item-left">📈 Analytics (D3)</span>
+        </button>
+        <button class="nav-item" data-view="properties" type="button">
+          <span class="nav-item-left">🏠 Properties</span>
+          <span class="nav-pill" id="nav-count-properties">0</span>
+        </button>
+        <button class="nav-item" data-view="map" type="button">
+          <span class="nav-item-left">🗺️ Property Map</span>
+        </button>
+        <button class="nav-item" data-view="users" type="button">
+          <span class="nav-item-left">👥 Users &amp; Roles</span>
+          <span class="nav-pill" id="nav-count-users">0</span>
+        </button>
+        <button class="nav-item" data-view="premium" type="button">
+          <span class="nav-item-left">⭐ 7-Day Passes</span>
+          <span class="nav-pill" id="nav-count-premium">0</span>
+        </button>
+        <button class="nav-item" data-view="chats" type="button">
+          <span class="nav-item-left">💬 Chats Monitor</span>
+          <span class="nav-pill" id="nav-count-chats">0</span>
+        </button>
+        <button class="nav-item" data-view="settings" type="button">
+          <span class="nav-item-left">⚙️ Settings &amp; Hosting</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="admin-user-chip">
+          <div id="admin-avatar" class="admin-avatar">A</div>
+          <div class="admin-user-meta">
+            <strong id="admin-name">Admin</strong>
+            <span id="admin-email">md.hashim248@gmail.com</span>
+          </div>
+        </div>
+        <button id="btn-signout" class="btn btn-secondary btn-full btn-sm" type="button">Sign Out</button>
+      </div>
+    </aside>
+
+    <div class="main-area">
+      <header class="topbar">
+        <div class="topbar-left">
+          <button id="btn-mobile-menu" class="btn btn-secondary btn-icon mobile-menu-btn" type="button" aria-label="Open menu">☰</button>
+          <div class="topbar-title">
+            <h2 id="view-title">Overview Dashboard</h2>
+            <p id="view-subtitle">Real-time sync with your Property Broker Android app</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="live-pill"><span class="live-dot"></span> Live Firebase</span>
+          <button id="btn-theme-toggle" class="btn btn-secondary btn-icon" type="button" title="Toggle Dark/Light Theme" aria-label="Toggle theme">🌙</button>
+          <button id="btn-quick-add" class="btn btn-primary" type="button">+ Add Property</button>
+        </div>
+      </header>
+
+      <main class="content-wrap">
+        <!-- ========== VIEW 1: OVERVIEW ========== -->
+        <section id="view-overview" class="view-section">
+          <div class="countdown-banner">
+            <div>
+              <h3>🚀 Scheduled Premium Launch: 1 January 2027</h3>
+              <p id="countdown-desc">Currently in <strong>100% Free Launch Window</strong> until 31 Dec 2026. On 1 Jan 2027, Add Property &amp; Contact Vault access automatically activate the 7-Day Premium Pass (₹999).</p>
+            </div>
+            <div class="countdown-chips" id="countdown-chips">
+              <div class="countdown-box"><strong id="cd-days">--</strong><span>Days</span></div>
+              <div class="countdown-box"><strong id="cd-hours">--</strong><span>Hours</span></div>
+              <div class="countdown-box"><strong id="cd-mins">--</strong><span>Mins</span></div>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Total Properties</span><span>🏠</span></div>
+              <div class="kpi-value" id="kpi-total-props">0</div>
+              <div class="kpi-sub" id="kpi-active-props">0 Active • 0 Closed</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Sale / Rent / Deposit</span><span>🏷️</span></div>
+              <div class="kpi-value" id="kpi-type-split">0 / 0 / 0</div>
+              <div class="kpi-sub">Buy • Monthly Rent • Heavy Deposit</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Registered Users</span><span>👥</span></div>
+              <div class="kpi-value" id="kpi-total-users">0</div>
+              <div class="kpi-sub" id="kpi-role-split">Buyers, Owners &amp; Renters</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Active 7-Day Passes</span><span>⭐</span></div>
+              <div class="kpi-value" id="kpi-active-passes">0</div>
+              <div class="kpi-sub">Synced from private/membership</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Buyer-Owner Chats</span><span>💬</span></div>
+              <div class="kpi-value" id="kpi-total-chats">0</div>
+              <div class="kpi-sub">Real-time negotiation threads</div>
+            </div>
+          </div>
+
+          <div class="panel-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3>Recent Properties</h3>
+                <button class="btn btn-secondary btn-sm" data-jump="properties" type="button">Manage All →</button>
+              </div>
+              <div id="overview-recent-props"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Listings by Category</h3>
+                <span class="badge badge-neutral" id="overview-verified-count">0 Verified</span>
+              </div>
+              <div id="overview-category-bars" class="bar-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== VIEW 2: PROPERTIES ========== -->
+        <section id="view-properties" class="view-section hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3>All Property Listings</h3>
+              <div class="action-row">
+                <button id="btn-export-props" class="btn btn-secondary btn-sm" type="button">⬇ Export CSV</button>
+                <button id="btn-add-prop-2" class="btn btn-primary btn-sm" type="button">+ Add Property</button>
+              </div>
+            </div>
+
+            <div class="toolbar">
+              <input id="prop-search" class="input toolbar-search" type="search" placeholder="Search by property name, location, owner, or price..." />
+              <select id="prop-filter-type" class="select" style="width:auto;min-width:150px;">
+                <option value="ALL">All Types</option>
+                <option value="SALE">Buy / Sale</option>
+                <option value="RENT">Rent</option>
+                <option value="HEAVY_DEPOSIT">Heavy Deposit</option>
+              </select>
+              <select id="prop-filter-category" class="select" style="width:auto;min-width:160px;">
+                <option value="ALL">All Categories</option>
+                <option value="APARTMENT">Apartment / Flat</option>
+                <option value="VILLA">Villa / Bungalow</option>
+                <option value="HOUSE">House</option>
+                <option value="SHOP">Shop</option>
+                <option value="GALA">Gala</option>
+                <option value="OFFICE">Office</option>
+                <option value="STUDIO">Studio</option>
+                <option value="COMMERCIAL">Commercial</option>
+                <option value="PLOT">Plot / Land</option>
+              </select>
+              <select id="prop-filter-status" class="select" style="width:auto;min-width:130px;">
+                <option value="ALL">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="CLOSED">Closed</option>
+              </select>
+              <label id="prop-live-sync-wrap" class="live-sync-toggle" for="prop-live-sync" title="Automatically poll Firestore every 30 seconds for updated property listings">
+                <input id="prop-live-sync" type="checkbox" role="switch" aria-checked="false" />
+                <span class="live-sync-switch" aria-hidden="true"></span>
+                <span class="live-sync-label">
+                  <span class="live-sync-dot" aria-hidden="true"></span>
+                  Live Sync
+                </span>
+                <span id="prop-live-sync-status" class="live-sync-status">Off</span>
+              </label>
+            </div>
+
+            <div class="chip-group" id="prop-price-chips">
+              <button class="chip active" data-price="ALL" type="button">All Prices</button>
+              <button class="chip" data-price="UNDER_50L" type="button">&lt; ₹50L</button>
+              <button class="chip" data-price="50L_1CR" type="button">₹50L – ₹1Cr</button>
+              <button class="chip" data-price="ABOVE_1CR" type="button">&gt; ₹1Cr</button>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>
+                      <span class="th-tooltip-trigger" tabindex="0" data-tooltip-title="Property Details" data-tooltip="Listing title, locality, bedroom count (BHK), and total area in sq.ft.">
+                        Property <span class="th-info-dot" aria-hidden="true">i</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="th-tooltip-trigger" tabindex="0" data-tooltip-title="Listing Type &amp; Category" data-tooltip="Transaction type (Sale, Rent, or Heavy Deposit) and property category (Apartment, House, Villa, Shop, Gala, etc.).">
+                        Type &amp; Category <span class="th-info-dot" aria-hidden="true">i</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="th-tooltip-trigger" tabindex="0" data-tooltip-title="Price" data-tooltip="Asking sale price, monthly rent, or heavy deposit amount formatted in INR (₹).">
+                        Price <span class="th-info-dot" aria-hidden="true">i</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="th-tooltip-trigger" tabindex="0" data-tooltip-title="Owner &amp; Owner Contact" data-tooltip="Property owner or broker name and last updated time. Use the Contact action to reveal private phone, email &amp; WhatsApp details.">
+                        Owner <span class="th-info-dot" aria-hidden="true">i</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="th-tooltip-trigger" tabindex="0" data-tooltip-title="Property Status" data-tooltip="Current visibility in the Android app (ACTIVE or CLOSED) along with Admin Verified badge status.">
+                        Status <span class="th-info-dot" aria-hidden="true">i</span>
+                      </span>
+                    </th>
+                    <th>
+                      <span class="th-tooltip-trigger" tabindex="0" data-tooltip-title="Owner Contact &amp; Listing Actions" data-tooltip="Reveal private Owner Contact Vault, Edit property details, toggle Verified badge, Close/Reopen, or Delete listing.">
+                        Actions <span class="th-info-dot" aria-hidden="true">i</span>
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id="properties-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== VIEW 3: INTERACTIVE MAP ========== -->
+        <section id="view-map" class="view-section hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3>Interactive Property Map (Free OpenStreetMap)</h3>
+              <div class="action-row">
+                <button id="btn-map-fit" class="btn btn-secondary btn-sm" type="button">🎯 Fit All Pins</button>
+              </div>
+            </div>
+            <div class="chip-group" id="map-filter-chips">
+              <button class="chip active" data-map-type="ALL" type="button">All Listings</button>
+              <button class="chip" data-map-type="SALE" type="button">Buy / Sale</button>
+              <button class="chip" data-map-type="RENT" type="button">Rent</button>
+              <button class="chip" data-map-type="HEAVY_DEPOSIT" type="button">Heavy Deposit</button>
+            </div>
+            <div id="property-map" class="map-container"></div>
+          </div>
+        </section>
+
+        <!-- ========== VIEW 4: USERS & ROLES ========== -->
+        <section id="view-users" class="view-section hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3>Registered App Users</h3>
+              <button id="btn-export-users" class="btn btn-secondary btn-sm" type="button">⬇ Export Users CSV</button>
+            </div>
+            <div class="toolbar">
+              <input id="user-search" class="input toolbar-search" type="search" placeholder="Search by name, email, or UID..." />
+              <select id="user-filter-role" class="select" style="width:auto;min-width:150px;">
+                <option value="ALL">All Roles</option>
+                <option value="BUYER">Buyer</option>
+                <option value="OWNER">Owner / Broker</option>
+                <option value="RENTER">Renter</option>
+                <option value="BOTH">Buyer &amp; Owner</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Role (Live Edit)</th>
+                    <th>Listings</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="users-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== VIEW 5: 7-DAY PREMIUM PASSES ========== -->
+        <section id="view-premium" class="view-section hidden">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>7-Day Premium Passes Manager</h3>
+                <p class="cell-sub" style="margin:4px 0 0;">Grant, extend, or revoke ₹999 7-Day Passes directly in each user's <code>private/membership</code> vault.</p>
+              </div>
+              <button id="btn-refresh-passes" class="btn btn-secondary btn-sm" type="button">🔄 Refresh Pass Status</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>User</th>
+                    <th>Plan &amp; Status</th>
+                    <th>Expires On</th>
+                    <th>Reference / Amount</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="premium-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== VIEW 6: CHATS MONITOR ========== -->
+        <section id="view-chats" class="view-section hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3>Buyer &amp; Owner Negotiation Chats</h3>
+              <span class="badge badge-neutral" id="chats-count-badge">0 Threads</span>
+            </div>
+            <div class="toolbar">
+              <input id="chat-search" class="input toolbar-search" type="search" placeholder="Search chats by property, buyer, owner, or last message..." />
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Property</th>
+                    <th>Participants</th>
+                    <th>Last Message</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="chats-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== VIEW 7: APP SETTINGS, HOSTING & AUDIT LOG ========== -->
+        <section id="view-settings" class="view-section hidden">
+          <div class="subtab-bar" id="settings-subtabs" role="tablist" aria-label="Settings sections">
+            <button class="subtab-btn active" data-settings-tab="config" role="tab" aria-selected="true" type="button">
+              ⚙️ App Config &amp; Free Hosting
+            </button>
+            <button class="subtab-btn" data-settings-tab="audit" role="tab" aria-selected="false" type="button">
+              📜 Audit Log <span class="subtab-badge" id="audit-tab-count">0</span>
+            </button>
+          </div>
+
+          <div id="settings-panel-config" class="settings-subpanel">
+          <div class="panel-grid">
+            <div class="card">
+              <div class="card-header">
+                <h3>Live App Configuration (<code>/app_config/settings</code>)</h3>
+                <span class="badge badge-active">Firestore Synced</span>
+              </div>
+              <form id="settings-form" class="form-grid">
+                <div class="field">
+                  <label for="cfg-latest-version">Latest App Version</label>
+                  <input id="cfg-latest-version" class="input" type="text" value="4.0" />
+                </div>
+                <div class="field">
+                  <label for="cfg-min-version">Minimum Supported Version</label>
+                  <input id="cfg-min-version" class="input" type="text" value="2.0" />
+                </div>
+                <div class="field">
+                  <label for="cfg-premium-price">7-Day Pass Price (INR)</label>
+                  <input id="cfg-premium-price" class="input" type="number" min="0" max="10000" value="999" />
+                </div>
+                <div class="field">
+                  <label for="cfg-premium-days">Pass Validity (Days)</label>
+                  <input id="cfg-premium-days" class="input" type="number" min="1" max="365" value="7" />
+                </div>
+                <div class="field">
+                  <label for="cfg-launch-date">Premium Activation Date</label>
+                  <input id="cfg-launch-date" class="input" type="date" value="2027-01-01" />
+                </div>
+                <div class="field">
+                  <label for="cfg-support-email">Support Email</label>
+                  <input id="cfg-support-email" class="input" type="email" value="md.hashim248@gmail.com" />
+                </div>
+                <div class="field">
+                  <label for="cfg-support-whatsapp">Support WhatsApp Number</label>
+                  <input id="cfg-support-whatsapp" class="input" type="text" placeholder="+91 98XXXXXXXX" />
+                </div>
+                <div class="field">
+                  <label for="cfg-play-url">Google Play Store URL</label>
+                  <input id="cfg-play-url" class="input" type="url" placeholder="https://play.google.com/store/apps/details?id=..." />
+                </div>
+                <div class="field form-full">
+                  <label for="cfg-announcement">Broadcast Announcement Banner (Optional)</label>
+                  <textarea id="cfg-announcement" class="textarea" placeholder="e.g., Welcome to Property Broker v2.0! All listings &amp; owner contacts are 100% FREE until 31 Dec 2026."></textarea>
+                </div>
+                <div class="form-full">
+                  <label class="checkbox-row">
+                    <input id="cfg-maintenance" type="checkbox" />
+                    <span>Enable Maintenance Mode flag</span>
+                  </label>
+                </div>
+                <div class="form-full" style="display:flex;justify-content:flex-end;">
+                  <button id="btn-save-settings" class="btn btn-primary" type="submit">💾 Save Live Config</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>🌐 100% Free Hosting Options (₹0 / month)</h3>
+                <span class="badge badge-sale">No Server Needed</span>
+              </div>
+              <p class="cell-sub" style="line-height:1.6;margin-top:0;">
+                Your entire website lives inside the <code>admin-web/</code> folder with zero build tools required. Publish it free in under 60 seconds:
+              </p>
+              <div class="guide-steps">
+                <div class="guide-card">
+                  <h4>1. Firebase Hosting (Recommended)</h4>
+                  <p>Pre-configured in <code>firebase.json</code>! Google Sign-In works immediately with zero domain setup.</p>
+                  <code class="code-box">firebase deploy --only hosting --project gen-lang-client-0124044841</code>
+                </div>
+                <div class="guide-card">
+                  <h4>2. Netlify Drop (Drag &amp; Drop)</h4>
+                  <p>Open <strong>app.netlify.com/drop</strong>, drag the <code>admin-web</code> folder, and add your Netlify hostname under Firebase Console → Auth → Authorized Domains.</p>
+                </div>
+                <div class="guide-card">
+                  <h4>3. GitHub / Cloudflare Pages</h4>
+                  <p>Push repo to GitHub and publish the <code>admin-web</code> folder on Cloudflare Pages or GitHub Pages for free global CDN + HTTPS.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <div id="settings-panel-audit" class="settings-subpanel hidden">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3>Admin Activity Audit Log</h3>
+                  <p class="cell-sub" style="margin:4px 0 0;">Append-only record of property edits, status &amp; verification toggles, role changes, pass grants, chat moderations, and settings updates (<code>/admin_audit_logs</code>).</p>
+                </div>
+                <div class="action-row">
+                  <button id="btn-export-audit" class="btn btn-secondary btn-sm" type="button">⬇ Export CSV</button>
+                  <button id="btn-clear-audit" class="btn btn-danger btn-sm" type="button">🗑 Clear Log</button>
+                </div>
+              </div>
+
+              <div class="autoclean-bar">
+                <div class="autoclean-info">
+                  <label id="audit-autoclean-wrap" class="live-sync-toggle" for="audit-autoclean-toggle" title="Optionally delete audit log entries older than 30 days automatically">
+                    <input id="audit-autoclean-toggle" type="checkbox" role="switch" aria-checked="false" />
+                    <span class="live-sync-switch" aria-hidden="true"></span>
+                    <span class="live-sync-label">
+                      <span class="live-sync-dot" aria-hidden="true"></span>
+                      Auto-Clean (&gt;30 Days)
+                    </span>
+                    <span id="audit-autoclean-status" class="live-sync-status">Off</span>
+                  </label>
+                  <p id="audit-autoclean-hint" class="cell-sub" style="margin:0;">
+                    Automatically deletes Firestore audit entries older than 30 days to keep database and UI performance fast.
+                  </p>
+                </div>
+                <div class="action-row">
+                  <button id="btn-prune-audit-now" class="btn btn-secondary btn-sm" type="button">🧹 Clean &gt;30d Now</button>
+                </div>
+              </div>
+
+              <div class="toolbar">
+                <input id="audit-search" class="input toolbar-search" type="search" placeholder="Search audit actions, property titles, entity IDs, or details..." />
+                <select id="audit-filter-entity" class="select" style="width:auto;min-width:160px;">
+                  <option value="ALL">All Categories</option>
+                  <option value="PROPERTY">Properties</option>
+                  <option value="USER">Users &amp; Roles</option>
+                  <option value="MEMBERSHIP">7-Day Passes</option>
+                  <option value="CHAT">Chats</option>
+                  <option value="SETTINGS">App Settings</option>
+                </select>
+              </div>
+
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Action</th>
+                      <th>Summary &amp; Details</th>
+                      <th>Target Entity</th>
+                      <th>Admin</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audit-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ========== VIEW 8: D3.JS ANALYTICS ========== -->
+        <section id="view-analytics" class="view-section hidden">
+          <div class="card" style="margin-bottom:20px;">
+            <div class="card-header" style="margin-bottom:0;">
+              <div>
+                <h3>Firestore Growth &amp; Engagement Analytics</h3>
+                <p class="cell-sub" style="margin:4px 0 0;">Live user growth and daily active user (DAU) counts derived from Firestore profiles, property listings, and chat activity.</p>
+              </div>
+              <div class="action-row">
+                <div class="chip-group" id="analytics-range-chips" style="margin-bottom:0;">
+                  <button class="chip" data-days="7" type="button">7D</button>
+                  <button class="chip" data-days="14" type="button">14D</button>
+                  <button class="chip active" data-days="30" type="button">30D</button>
+                  <button class="chip" data-days="90" type="button">90D</button>
+                </div>
+                <button id="btn-export-analytics" class="btn btn-secondary btn-sm" type="button">⬇ Export CSV</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Total Registered Users</span><span>👥</span></div>
+              <div class="kpi-value" id="an-kpi-total">0</div>
+              <div class="kpi-sub">All-time Firestore /users</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>New Signups</span><span>🚀</span></div>
+              <div class="kpi-value" id="an-kpi-new">+0</div>
+              <div class="kpi-sub" id="an-kpi-new-sub">Joined in last 30 days</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Today's DAU</span><span>🔥</span></div>
+              <div class="kpi-value" id="an-kpi-dau-today">0</div>
+              <div class="kpi-sub" id="an-kpi-dau-peak">Peak DAU: 0 users</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-head"><span>Average DAU</span><span>📈</span></div>
+              <div class="kpi-value" id="an-kpi-dau-avg">0.0</div>
+              <div class="kpi-sub" id="an-kpi-stickiness">0% avg daily engagement</div>
+            </div>
+          </div>
+
+          <div class="panel-grid">
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3>User Growth Trend</h3>
+                  <p class="cell-sub" style="margin:3px 0 0;">Cumulative users (line) + daily new signups (bars)</p>
+                </div>
+                <div class="d3-inline-legend">
+                  <span><i class="d3-dot" style="background:var(--primary)"></i>Total Users</span>
+                  <span><i class="d3-dot" style="background:var(--emerald)"></i>New Signups</span>
+                </div>
+              </div>
+              <div id="chart-user-growth" class="d3-chart-box"></div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3>Daily Active Users (DAU)</h3>
+                  <p class="cell-sub" style="margin:3px 0 0;">Distinct active users per day + 3-day moving average</p>
+                </div>
+                <div class="d3-inline-legend">
+                  <span><i class="d3-dot" style="background:var(--emerald)"></i>Daily Active</span>
+                  <span><i class="d3-dot" style="background:var(--amber)"></i>3-Day Avg</span>
+                </div>
+              </div>
+              <div id="chart-dau" class="d3-chart-box"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>User Role Distribution</h3>
+              <span class="badge badge-neutral">Live /users Breakdown</span>
+            </div>
+            <div class="d3-donut-layout">
+              <div id="chart-role-mix" class="d3-donut-box"></div>
+              <div id="chart-role-legend" class="d3-legend-list"></div>
+            </div>
+          </div>
+        </section>
+
+        <footer class="rera-disclaimer-footer" role="contentinfo">
+          <strong>⚖️ RERA &amp; Platform Disclaimer:</strong>
+          Property Broker operates solely as an online intermediary and technology listing platform connecting property owners, real estate agents, and prospective buyers/tenants. We do not act as a real estate broker, developer, or agent, nor do we verify, endorse, or guarantee the accuracy, legality, or RERA registration status of any property listed on this platform. Prospective buyers and tenants are strongly advised to independently verify all property titles, approvals, and RERA registration details directly on the official state RERA portal (such as <a href="https://maharera.maharashtra.gov.in" target="_blank" rel="noopener">maharera.maharashtra.gov.in</a>) before making any financial commitment or transaction.
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: ADD / EDIT PROPERTY ==================== -->
+  <div id="modal-property" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-prop-title">Add New Property</h3>
+        <button class="btn btn-ghost btn-icon js-close-modal" data-modal="modal-property" type="button" aria-label="Close">✕</button>
+      </div>
+      <form id="property-form" class="modal-body">
+        <input type="hidden" id="pf-id" />
+        <input type="hidden" id="pf-owner-id" />
+        <div class="form-grid">
+          <div class="field form-full">
+            <label for="pf-title">Property Title *</label>
+            <input id="pf-title" class="input" type="text" required minlength="3" maxlength="100" placeholder="e.g., 2 BHK Sea-Facing Flat in Andheri West" />
+          </div>
+          <div class="field">
+            <label for="pf-type">Listing Type *</label>
+            <select id="pf-type" class="select" required>
+              <option value="SALE">Buy / Sale</option>
+              <option value="RENT">Rent</option>
+              <option value="HEAVY_DEPOSIT">Heavy Deposit</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pf-category">Property Category *</label>
+            <select id="pf-category" class="select" required>
+              <option value="APARTMENT">Apartment / Flat</option>
+              <option value="VILLA">Villa / Bungalow</option>
+              <option value="HOUSE">Independent House</option>
+              <option value="SHOP">Shop / Showroom</option>
+              <option value="GALA">Industrial Gala</option>
+              <option value="OFFICE">Office Space</option>
+              <option value="STUDIO">Studio</option>
+              <option value="COMMERCIAL">Commercial</option>
+              <option value="PLOT">Plot / Land</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pf-price"><span id="pf-price-label">Price (INR) *</span> <span id="pf-price-preview" style="color:var(--primary);"></span></label>
+            <input id="pf-price" class="input" type="number" required min="1" max="10000000000" placeholder="e.g., 8500000" />
+          </div>
+          <div class="field">
+            <label for="pf-location">Location / Locality *</label>
+            <div style="display:flex;gap:8px;">
+              <input id="pf-location" class="input" type="text" required minlength="2" maxlength="120" placeholder="e.g., Bandra West, Mumbai" />
+              <button id="btn-auto-coords" class="btn btn-secondary btn-sm" type="button" title="Auto-fill GPS coordinates">📍</button>
+              <button id="btn-toggle-modal-map" class="btn btn-secondary btn-sm" type="button" title="Pick exact pin on map (Optional)">🗺️ Map</button>
+            </div>
+          </div>
+          <div id="pf-floor-field" class="field hidden">
+            <label for="pf-floor">Floor (Optional)</label>
+            <input id="pf-floor" class="input" type="text" maxlength="40" placeholder="e.g., Ground, 3rd Floor" />
+          </div>
+          <div id="pf-deposit-field" class="field hidden">
+            <label for="pf-deposit">Deposit (INR)</label>
+            <input id="pf-deposit" class="input" type="number" min="0" max="10000000000" placeholder="e.g., 100000" />
+          </div>
+          <div id="pf-monthly-rent-field" class="field hidden">
+            <label for="pf-monthly-rent">Monthly Rent (INR)</label>
+            <input id="pf-monthly-rent" class="input" type="number" min="0" max="10000000000" placeholder="e.g., 0 or 5000" />
+          </div>
+          <div class="field">
+            <label for="pf-bedrooms">Bedrooms (BHK)</label>
+            <input id="pf-bedrooms" class="input" type="number" min="0" max="20" value="2" />
+          </div>
+          <div class="field">
+            <label for="pf-area">Area (Sq.Ft.)</label>
+            <input id="pf-area" class="input" type="number" min="0" max="1000000" value="950" />
+          </div>
+          <div class="field">
+            <label for="pf-building-age">Building Age</label>
+            <input id="pf-building-age" class="input" type="text" maxlength="40" list="building-age-presets" placeholder="e.g., New, 3 Years, 10+ Years" />
+            <datalist id="building-age-presets">
+              <option value="New"></option>
+              <option value="1-5 Years"></option>
+              <option value="5-10 Years"></option>
+              <option value="10+ Years"></option>
+            </datalist>
+          </div>
+          <div class="field">
+            <label for="pf-lift">Lift Available</label>
+            <select id="pf-lift" class="select">
+              <option value="false">No</option>
+              <option value="true">Yes</option>
+            </select>
+          </div>
+          <div id="pf-map-picker-wrap" class="field form-full hidden">
+            <div class="modal-map-header">
+              <span class="field-hint" style="margin:0;">Click anywhere on the map or drag the pin to set exact GPS coordinates (Optional).</span>
+              <button id="btn-clear-modal-coords" class="btn btn-ghost btn-sm" type="button">Clear Pin</button>
+            </div>
+            <div id="pf-map-canvas" class="modal-map-canvas"></div>
+          </div>
+          <div class="field">
+            <label for="pf-lat">Latitude (Optional)</label>
+            <input id="pf-lat" class="input" type="number" step="0.00001" min="-90" max="90" placeholder="19.07600" />
+          </div>
+          <div class="field">
+            <label for="pf-lng">Longitude (Optional)</label>
+            <input id="pf-lng" class="input" type="number" step="0.00001" min="-180" max="180" placeholder="72.87770" />
+          </div>
+          <div class="field">
+            <label for="pf-owner-name">Owner / Broker Name *</label>
+            <input id="pf-owner-name" class="input" type="text" required minlength="1" maxlength="80" placeholder="e.g., Hashim Properties" />
+          </div>
+          <div class="field">
+            <label for="pf-status">Listing Status</label>
+            <select id="pf-status" class="select">
+              <option value="ACTIVE">ACTIVE (Visible in App)</option>
+              <option value="CLOSED">CLOSED (Hidden from Public)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="pf-phone">Owner Contact Phone * (Private Vault)</label>
+            <input id="pf-phone" class="input" type="tel" required minlength="7" maxlength="20" placeholder="+91 9820012345" />
+          </div>
+          <div class="field">
+            <label for="pf-email">Owner Contact Email (Private Vault)</label>
+            <input id="pf-email" class="input" type="email" maxlength="160" placeholder="owner@example.com" />
+          </div>
+          <div class="field form-full">
+            <label for="pf-photo">Photo URL or App Preset Key</label>
+            <input id="pf-photo" class="input" type="text" maxlength="500" placeholder="preset:apartment or https://..." />
+            <span class="field-hint">Leave blank to auto-assign category artwork (e.g., <code>preset:apartment</code>).</span>
+          </div>
+          <div class="field form-full">
+            <label for="pf-description">Description</label>
+            <textarea id="pf-description" class="textarea" maxlength="1200" placeholder="Key highlights, carpet area, parking, floor, furnishing, nearby metro/station..."></textarea>
+          </div>
+          <div class="field">
+            <label class="checkbox-row">
+              <input id="pf-whatsapp" type="checkbox" checked />
+              <span>WhatsApp Enabled on Phone</span>
+            </label>
+          </div>
+          <div class="field">
+            <label class="checkbox-row">
+              <input id="pf-verified" type="checkbox" checked />
+              <span>Admin Verified Listing Badge</span>
+            </label>
+          </div>
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button class="btn btn-secondary js-close-modal" data-modal="modal-property" type="button">Cancel</button>
+        <button id="btn-save-property" class="btn btn-primary" type="submit" form="property-form">Save Property</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CONTACT VAULT ==================== -->
+  <div id="modal-contact" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3>🔐 Private Owner Contact Vault</h3>
+        <button class="btn btn-ghost btn-icon js-close-modal" data-modal="modal-contact" type="button" aria-label="Close">✕</button>
+      </div>
+      <div id="contact-vault-body" class="modal-body"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary js-close-modal" data-modal="modal-contact" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: MANAGE 7-DAY PREMIUM PASS ==================== -->
+  <div id="modal-pass" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h3>⭐ Manage 7-Day Premium Pass</h3>
+        <button class="btn btn-ghost btn-icon js-close-modal" data-modal="modal-pass" type="button" aria-label="Close">✕</button>
+      </div>
+      <form id="pass-form" class="modal-body">
+        <input type="hidden" id="pass-uid" />
+        <div style="margin-bottom:14px;">
+          <div class="cell-title" id="pass-user-name">User Name</div>
+          <div class="cell-sub" id="pass-user-email">user@example.com</div>
+        </div>
+        <div class="form-grid">
+          <div class="field form-full">
+            <label for="pass-plan">Plan Name</label>
+            <input id="pass-plan" class="input" type="text" required minlength="3" maxlength="80" value="7-Day Premium Pass" />
+          </div>
+          <div class="field">
+            <label for="pass-days">Duration (Days from now)</label>
+            <input id="pass-days" class="input" type="number" min="1" max="365" value="7" />
+          </div>
+          <div class="field">
+            <label for="pass-amount">Amount Paid (INR)</label>
+            <input id="pass-amount" class="input" type="number" min="0" max="10000" value="999" />
+          </div>
+          <div class="field form-full">
+            <label for="pass-ref">Payment / Admin Reference Code</label>
+            <input id="pass-ref" class="input" type="text" required minlength="4" maxlength="64" />
+          </div>
+          <div class="form-full">
+            <label class="checkbox-row">
+              <input id="pass-active" type="checkbox" checked />
+              <span>Pass Active (Unlocks Contact Vault &amp; Add Property)</span>
+            </label>
+          </div>
+        </div>
+      </form>
+      <div class="modal-footer">
+        <button id="btn-revoke-pass" class="btn btn-danger" type="button">Revoke Pass</button>
+        <button class="btn btn-secondary js-close-modal" data-modal="modal-pass" type="button">Cancel</button>
+        <button id="btn-save-pass" class="btn btn-emerald" type="submit" form="pass-form">Save Pass</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: CHAT INSPECTOR ==================== -->
+  <div id="modal-chat" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h3 id="chat-modal-title">Conversation</h3>
+          <div class="cell-sub" id="chat-modal-sub"></div>
+        </div>
+        <button class="btn btn-ghost btn-icon js-close-modal" data-modal="modal-chat" type="button" aria-label="Close">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="chat-messages-list" class="chat-messages"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-delete-chat-modal" class="btn btn-danger" type="button">🗑 Delete Thread</button>
+        <button class="btn btn-secondary js-close-modal" data-modal="modal-chat" type="button">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SIDE PANEL: PROPERTY PREVIEW ==================== -->
+  <div id="property-preview-backdrop" class="preview-backdrop hidden" aria-hidden="true"></div>
+  <aside id="property-preview-drawer" class="preview-drawer" aria-label="Property Details Preview" aria-hidden="true">
+    <div class="preview-drawer-header">
+      <div class="preview-drawer-heading">
+        <span class="preview-kicker">Property Preview</span>
+        <h3 id="preview-prop-title">Listing Details</h3>
+      </div>
+      <button id="btn-close-preview" class="btn btn-ghost btn-icon" type="button" aria-label="Close property preview">✕</button>
+    </div>
+    <div id="property-preview-body" class="preview-drawer-body"></div>
+    <div id="property-preview-footer" class="preview-drawer-footer"></div>
+  </aside>
+
+  <div id="toast-stack" class="toast-stack" aria-live="polite"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js" crossorigin=""></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

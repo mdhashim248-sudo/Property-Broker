@@ -1,0 +1,6 @@
+{
+  "name": "Property Broker",
+  "description": "Verified real estate marketplace for buying, selling, and renting properties with secure Google Sign-In, contact protection, and owner chat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

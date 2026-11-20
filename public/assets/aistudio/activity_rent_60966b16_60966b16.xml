@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
+    android:background="#F5F7FA">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rent Options"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        android:textColor="#1A237E"
+        android:layout_marginBottom="40dp" />
+
+    <Button
+        android:id="@+id/btnOwner"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="1. Property Owner"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp"
+        android:backgroundTint="#6A1B9A"
+        android:textColor="#FFFFFF" />
+
+    <Button
+        android:id="@+id/btnRenter"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="2. Renter"
+        android:textSize="18sp"
+        android:backgroundTint="#00838F"
+        android:textColor="#FFFFFF" />
+
+</LinearLayout>

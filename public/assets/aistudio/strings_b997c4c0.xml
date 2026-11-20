@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Property Broker</string>
+    <string name="tagline_subtitle">Buy, Sell &amp; Rent Verified Properties</string>
+    <string name="demo_login_hint">Demo: Any email &amp; password works, or Phone OTP 123456</string>
+    <string name="unlock_fee_label">Get 3-Day Premium (₹999)</string>
+    <string name="logout">Logout</string>
+</resources>
